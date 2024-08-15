@@ -154,39 +154,6 @@ impl CpModelBuilder {
         self.proto.variables[var.into().0 as usize].name = name.into();
     }
 
-    /// Returns the name of a constraint, empty string if not setted.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use cp_sat::builder::CpModelBuilder;
-    /// let mut model = CpModelBuilder::default();
-    /// let x = model.new_bool_var();
-    /// let constraint = model.add_or([x]);
-    /// assert_eq!("", model.constraint_name(constraint));
-    /// model.set_constraint_name(constraint, "or");
-    /// assert_eq!("or", model.constraint_name(constraint));
-    /// ```
-    pub fn constraint_name(&self, constraint: Constraint) -> &str {
-        &self.proto.constraints[constraint.0].name
-    }
-
-    /// Sets the name of a constraint.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use cp_sat::builder::CpModelBuilder;
-    /// let mut model = CpModelBuilder::default();
-    /// let x = model.new_bool_var();
-    /// let constraint = model.add_or([x]);
-    /// model.set_constraint_name(constraint, "or");
-    /// assert_eq!("or", model.constraint_name(constraint));
-    /// ```
-    pub fn set_constraint_name(&mut self, constraint: Constraint, name: &str) {
-        self.proto.constraints[constraint.0].name = name.into();
-    }
-
     /// Adds a boolean OR constraint on a list of [BoolVar].
     ///
     /// # Example
@@ -586,12 +553,11 @@ impl CpModelBuilder {
         }))
     }
     fn add_cst(&mut self, cst: CstEnum) -> Constraint {
-        let index = self.proto.constraints.len();
         self.proto.constraints.push(proto::ConstraintProto {
             constraint: Some(cst),
             ..Default::default()
         });
-        Constraint(index)
+        Constraint(self.proto.constraints.last_mut().unwrap())
     }
 
     /// Add a solution hint.
@@ -855,9 +821,25 @@ impl IntVar {
     }
 }
 
-/// Constraint identifier.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Constraint(usize);
+/// Constraint reference for method chaining.
+#[derive(Debug)]
+pub struct Constraint<'a>(&'a mut proto::ConstraintProto);
+
+impl<'a> Constraint<'a> {
+    /// Only enforce the constraint if all of the given variables are true.
+    pub fn only_enforce_if(&mut self, vars: impl IntoIterator<Item = BoolVar>) -> &mut Self {
+        self.0
+            .enforcement_literal
+            .extend(vars.into_iter().map(|v| v.0));
+        self
+    }
+
+    /// Sets the name of the constraint.
+    pub fn with_name(&mut self, name: String) -> &mut Self {
+        self.0.name = name;
+        self
+    }
+}
 
 /// A linear expression, used in several places in the
 /// [builder][CpModelBuilder].
