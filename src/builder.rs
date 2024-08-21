@@ -154,6 +154,23 @@ impl CpModelBuilder {
         self.proto.variables[var.into().0 as usize].name = name.into();
     }
 
+    /// Gets the domain of a variable.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use cp_sat::builder::CpModelBuilder;
+    /// let mut model = CpModelBuilder::default();
+    /// let x = model.new_int_var([(0, 2)]);
+    /// assert_eq!(vec![(0, 2)], model.var_domain(x));
+    pub fn var_domain(&self, var: impl Into<IntVar>) -> Vec<(i64, i64)> {
+        self.proto.variables[var.into().0 as usize]
+            .domain
+            .chunks_exact(2)
+            .map(|c| (c[0], c[1]))
+            .collect()
+    }
+
     /// Adds a boolean OR constraint on a list of [BoolVar].
     ///
     /// # Example
