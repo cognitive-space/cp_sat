@@ -123,6 +123,22 @@ impl CpModelBuilder {
         IntVar(index)
     }
 
+    /// Adds a new variable constrained to be the product of a [BoolVar] and an
+    /// [IntVar].
+    pub fn new_bool_int_product(&mut self, bool_var: BoolVar, int_var: IntVar) -> IntVar {
+        let mut domain = self.var_domain(int_var);
+        // Ensure the 0 value is in the domain
+        match domain[0] {
+            (0, _) => {}
+            (1, end) if end != 1 => domain[0] = (0, domain[0].1),
+            _ => domain.insert(0, (0, 0)),
+        };
+        let var = self.new_int_var(domain);
+        self.add_eq(var, int_var).only_enforce_if([bool_var]);
+        self.add_eq(var, 0).only_enforce_if([!bool_var]);
+        var
+    }
+
     /// Returns the name of a variable, empty string if not setted.
     ///
     /// # Example
