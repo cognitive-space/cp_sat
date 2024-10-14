@@ -150,7 +150,7 @@ impl CpModelBuilder {
     /// model.set_var_name(x, "x");
     /// assert_eq!("x", model.var_name(x));
     /// ```
-    pub fn set_var_name(&mut self, var: impl Into<IntVar>, name: &str) {
+    pub fn set_var_name(&mut self, var: impl Into<IntVar>, name: impl Into<String>) {
         self.proto.variables[var.into().0 as usize].name = name.into();
     }
 
