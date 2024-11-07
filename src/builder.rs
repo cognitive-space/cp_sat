@@ -560,6 +560,11 @@ impl CpModelBuilder {
         Constraint(self.proto.constraints.last_mut().unwrap())
     }
 
+    /// Add an assumption.
+    pub fn add_assumption(&mut self, var: BoolVar) {
+        self.proto.assumptions.push(var.0);
+    }
+
     /// Add a solution hint.
     ///
     /// # Example
