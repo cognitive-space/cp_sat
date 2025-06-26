@@ -18,7 +18,7 @@ use smallvec::SmallVec;
 /// assert!(x.solution_value(&response));
 /// assert!(y.solution_value(&response));
 /// ```
-#[derive(Default, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct CpModelBuilder {
     proto: proto::CpModelProto,
 }
